@@ -1,6 +1,7 @@
 import { createLandmarker }                                    from './landmarker.js';
 import { calculateMeasurements, sampleEyeColors, resetEyeColorState } from './measurements.js';
-import { render }                                              from './renderer.js';
+import { detectHairline, resetHairlineState }                 from './hairline.js';
+import { render, renderHairline }                             from './renderer.js';
 import { buildPanel, updatePanel }                             from './panel.js';
 
 const video      = document.getElementById('video');
@@ -22,6 +23,9 @@ const ALPHA = 0.2;
 
 // Last eye colours (updated at a low frame rate)
 let eyeColors = null;
+
+// Last hairline detection result
+let hairlineResult = null;
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
@@ -96,6 +100,7 @@ function detect() {
   const lms     = results.faceLandmarks?.[0];
 
   render(ctx, canvas, lms);
+  renderHairline(ctx, canvas, hairlineResult);
 
   // Update panel at ~10 fps (every 3rd frame at 30 fps)
   if (frameCount % 3 !== 0) return;
@@ -107,6 +112,8 @@ function detect() {
     Object.keys(smoothed).forEach(k => delete smoothed[k]);
     eyeColors = null;
     resetEyeColorState();
+    hairlineResult = null;
+    resetHairlineState();
     return;
   }
 
@@ -116,6 +123,11 @@ function detect() {
   // Eye colour sampled every ~1 s (every 30th frame at 30 fps, but we run 10 fps here so every 10 calls)
   if (frameCount % 30 === 0) {
     eyeColors = sampleEyeColors(video, lms);
+  }
+
+  // Hairline sampled every 15 frames
+  if (frameCount % 15 === 0) {
+    hairlineResult = detectHairline(video, lms);
   }
 
   const raw = calculateMeasurements(lms);
@@ -137,6 +149,15 @@ function detect() {
   if (eyeColors) {
     smoothed.lEyeColor = eyeColors.left;
     smoothed.rEyeColor = eyeColors.right;
+  }
+
+  // Inject hairline measurements
+  if (hairlineResult) {
+    smoothed.hairlineHeight = smoothed.hairlineHeight !== undefined
+      ? smoothed.hairlineHeight * (1 - ALPHA) + hairlineResult.height * ALPHA
+      : hairlineResult.height;
+    smoothed.hairlineShape = hairlineResult.shape;
+    smoothed.hairlineConf  = hairlineResult.confidence;
   }
 
   updatePanel(panelRefs, smoothed);

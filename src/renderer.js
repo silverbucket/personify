@@ -172,3 +172,43 @@ export function render(ctx, canvas, lms) {
 function midPt(a, b) {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
+
+// ── Hairline overlay ─────────────────────────────────────────────────────────
+
+const HAIRLINE_COLOR = '#a78bfa';
+
+/**
+ * renderHairline(ctx, canvas, hairlineResult)
+ * Draws detected hairline points and a connecting polyline.
+ * hairlineResult is the object returned by detectHairline(), or null.
+ */
+export function renderHairline(ctx, canvas, hairlineResult) {
+  if (!hairlineResult || !hairlineResult.points || hairlineResult.points.length < 2) return;
+
+  const cw = canvas.width;
+  const ch = canvas.height;
+
+  const pts = hairlineResult.points.map(p => ({ x: p.x * cw, y: p.y * ch }));
+
+  ctx.save();
+
+  // Connecting polyline at 40% opacity
+  ctx.strokeStyle  = HAIRLINE_COLOR;
+  ctx.lineWidth    = 1.5;
+  ctx.globalAlpha  = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.stroke();
+
+  // Dots at each point at full opacity
+  ctx.fillStyle   = HAIRLINE_COLOR;
+  ctx.globalAlpha = 1;
+  for (const p of pts) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}

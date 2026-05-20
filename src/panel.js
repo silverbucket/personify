@@ -18,6 +18,15 @@ const SECTIONS = [
     ],
   },
   {
+    label: 'Hairline',
+    color: '#a78bfa',
+    rows: [
+      { key: 'hairlineHeight', label: 'Height',     unit: '%' },
+      { key: 'hairlineShape',  label: 'Shape',      unit: 'text' },
+      { key: 'hairlineConf',   label: 'Confidence', unit: '%' },
+    ],
+  },
+  {
     label: 'Eyebrows',
     color: COLORS.brows,
     rows: [
@@ -139,6 +148,8 @@ export function updatePanel(refs, m) {
           ref.valEl.textContent = val.name;
           if (ref.swatch) ref.swatch.style.backgroundColor = val.hex;
         }
+      } else if (row.unit === 'text') {
+        ref.valEl.textContent = val;
       } else if (row.unit === 'ratio') {
         ref.valEl.textContent = Number(val).toFixed(2);
       } else {
