@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0f1e" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>Personify</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <span class="wordmark">Personify</span>
+      <span id="status">Initializing…</span>
+    </header>
+
+    <main>
+      <div id="camera-view">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="overlay"></canvas>
+        <div id="no-face">No face detected</div>
+      </div>
+
+      <aside id="panel">
+        <div id="panel-content">
+          <!-- populated by panel.js -->
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
